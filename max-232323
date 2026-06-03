@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌍 Länder & Flaggen Quiz</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f7fa;
+    text-align:center;
+    padding:20px;
+}
+
+.container{
+    max-width:800px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 0 15px rgba(0,0,0,.15);
+}
+
+h1{
+    color:#2c3e50;
+}
+
+input{
+    padding:10px;
+    font-size:16px;
+    width:250px;
+}
+
+button{
+    padding:12px 20px;
+    margin:10px;
+    border:none;
+    border-radius:8px;
+    background:#3498db;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#2980b9;
+}
+
+#flag{
+    font-size:120px;
+}
+
+.score{
+    font-size:22px;
+    font-weight:bold;
+    color:green;
+}
+
+#quizArea{
+    display:none;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <div id="startScreen">
+        <h1>🌍 Länder & Flaggen Quiz</h1>
+
+        <p>Bitte Namen eingeben:</p>
+
+        <input type="text" id="playerName" placeholder="Dein Name">
+
+        <br><br>
+
+        <button onclick="startGame('land')">
+            Länder raten
+        </button>
+
+        <button onclick="startGame('flag')">
+            Flaggen raten
+        </button>
+    </div>
+
+    <div id="quizArea">
+
+        <h2 id="welcome"></h2>
+
+        <div class="score">
+            Punkte: <span id="score">0</span> / 50
+        </div>
+
+        <hr>
+
+        <div id="question"></div>
+        <div id="flag"></div>
+
+        <br>
+
+        <input id="answer" type="text" placeholder="Antwort eingeben">
+
+        <br><br>
+
+        <button onclick="checkAnswer()">
+            Antwort prüfen
+        </button>
+
+        <p id="result"></p>
+
+    </div>
+
+</div>
+
+<script>
+
+let mode = "";
+let score = 0;
+let currentAnswer = "";
+
+const countries = [
+{country:"Deutschland",capital:"Berlin"},
+{country:"Frankreich",capital:"Paris"},
+{country:"Spanien",capital:"Madrid"},
+{country:"Italien",capital:"Rom"},
+{country:"Portugal",capital:"Lissabon"},
+{country:"Belgien",capital:"Brüssel"},
+{country:"Niederlande",capital:"Amsterdam"},
+{country:"Österreich",capital:"Wien"},
+{country:"Schweiz",capital:"Bern"},
+{country:"Polen",capital:"Warschau"},
+{country:"Tschechien",capital:"Prag"},
+{country:"Ungarn",capital:"Budapest"},
+{country:"Griechenland",capital:"Athen"},
+{country:"Türkei",capital:"Ankara"},
+{country:"Japan",capital:"Tokio"},
+{country:"China",capital:"Peking"},
+{country:"Indien",capital:"Neu-Delhi"},
+{country:"Südkorea",capital:"Seoul"},
+{country:"Thailand",capital:"Bangkok"},
+{country:"Vietnam",capital:"Hanoi"},
+{country:"Australien",capital:"Canberra"},
+{country:"Neuseeland",capital:"Wellington"},
+{country:"Kanada",capital:"Ottawa"},
+{country:"USA",capital:"Washington D.C."},
+{country:"Mexiko",capital:"Mexiko-Stadt"},
+{country:"Brasilien",capital:"Brasília"},
+{country:"Argentinien",capital:"Buenos Aires"},
+{country:"Chile",capital:"Santiago"},
+{country:"Kolumbien",capital:"Bogotá"},
+{country:"Peru",capital:"Lima"},
+{country:"Ägypten",capital:"Kairo"},
+{country:"Marokko",capital:"Rabat"},
+{country:"Südafrika",capital:"Pretoria"},
+{country:"Nigeria",capital:"Abuja"},
+{country:"Kenia",capital:"Nairobi"},
+{country:"Saudi-Arabien",capital:"Riad"},
+{country:"Israel",capital:"Jerusalem"},
+{country:"VAE",capital:"Abu Dhabi"},
+{country:"Russland",capital:"Moskau"},
+{country:"Ukraine",capital:"Kiew"},
+{country:"Norwegen",capital:"Oslo"},
+{country:"Schweden",capital:"Stockholm"},
+{country:"Finnland",capital:"Helsinki"},
+{country:"Dänemark",capital:"Kopenhagen"},
+{country:"Irland",capital:"Dublin"},
+{country:"Island",capital:"Reykjavík"},
+{country:"Rumänien",capital:"Bukarest"},
+{country:"Bulgarien",capital:"Sofia"},
+{country:"Kroatien",capital:"Zagreb"},
+{country:"Serbien",capital:"Belgrad"}
+];
+
+const flags = [
+{flag:"🇩🇪",country:"Deutschland"},
+{flag:"🇫🇷",country:"Frankreich"},
+{flag:"🇪🇸",country:"Spanien"},
+{flag:"🇮🇹",country:"Italien"},
+{flag:"🇵🇹",country:"Portugal"},
+{flag:"🇧🇪",country:"Belgien"},
+{flag:"🇳🇱",country:"Niederlande"},
+{flag:"🇦🇹",country:"Österreich"},
+{flag:"🇨🇭",country:"Schweiz"},
+{flag:"🇵🇱",country:"Polen"},
+{flag:"🇨🇿",country:"Tschechien"},
+{flag:"🇭🇺",country:"Ungarn"},
+{flag:"🇬🇷",country:"Griechenland"},
+{flag:"🇹🇷",country:"Türkei"},
+{flag:"🇯🇵",country:"Japan"},
+{flag:"🇨🇳",country:"China"},
+{flag:"🇮🇳",country:"Indien"},
+{flag:"🇰🇷",country:"Südkorea"},
+{flag:"🇹🇭",country:"Thailand"},
+{flag:"🇻🇳",country:"Vietnam"},
+{flag:"🇦🇺",country:"Australien"},
+{flag:"🇳🇿",country:"Neuseeland"},
+{flag:"🇨🇦",country:"Kanada"},
+{flag:"🇺🇸",country:"USA"},
+{flag:"🇲🇽",country:"Mexiko"},
+{flag:"🇧🇷",country:"Brasilien"},
+{flag:"🇦🇷",country:"Argentinien"},
+{flag:"🇨🇱",country:"Chile"},
+{flag:"🇨🇴",country:"Kolumbien"},
+{flag:"🇵🇪",country:"Peru"},
+{flag:"🇪🇬",country:"Ägypten"},
+{flag:"🇲🇦",country:"Marokko"},
+{flag:"🇿🇦",country:"Südafrika"},
+{flag:"🇳🇬",country:"Nigeria"},
+{flag:"🇰🇪",country:"Kenia"},
+{flag:"🇸🇦",country:"Saudi-Arabien"},
+{flag:"🇮🇱",country:"Israel"},
+{flag:"🇦🇪",country:"VAE"},
+{flag:"🇷🇺",country:"Russland"},
+{flag:"🇺🇦",country:"Ukraine"},
+{flag:"🇳🇴",country:"Norwegen"},
+{flag:"🇸🇪",country:"Schweden"},
+{flag:"🇫🇮",country:"Finnland"},
+{flag:"🇩🇰",country:"Dänemark"},
+{flag:"🇮🇪",country:"Irland"},
+{flag:"🇮🇸",country:"Island"},
+{flag:"🇷🇴",country:"Rumänien"},
+{flag:"🇧🇬",country:"Bulgarien"},
+{flag:"🇭🇷",country:"Kroatien"},
+{flag:"🇷🇸",country:"Serbien"}
+];
+
+function startGame(selectedMode){
+
+    let name =
+    document.getElementById("playerName").value.trim();
+
+    if(name === ""){
+        alert("Bitte Namen eingeben!");
+        return;
+    }
+
+    mode = selectedMode;
+
+    document.getElementById("startScreen").style.display="none";
+    document.getElementById("quizArea").style.display="block";
+
+    document.getElementById("welcome").innerHTML =
+    "Willkommen, <b>" + name + "</b>";
+
+    nextQuestion();
+}
+
+function nextQuestion(){
+
+    document.getElementById("answer").value="";
+    document.getElementById("result").innerHTML="";
+
+    if(mode==="land"){
+
+        let item =
+        countries[Math.floor(Math.random()*countries.length)];
+
+        currentAnswer = item.country;
+
+        document.getElementById("flag").innerHTML="";
+
+        document.getElementById("question").innerHTML =
+        "<h3>Welches Land hat die Hauptstadt <b>" +
+        item.capital +
+        "</b>?</h3>";
+
+    }else{
+
+        let item =
+        flags[Math.floor(Math.random()*flags.length)];
+
+        currentAnswer = item.country;
+
+        document.getElementById("question").innerHTML =
+        "<h3>Zu welchem Land gehört diese Flagge?</h3>";
+
+        document.getElementById("flag").innerHTML =
+        item.flag;
+    }
+}
+
+function checkAnswer(){
+
+    let answer =
+    document.getElementById("answer").value.trim();
+
+    if(answer.toLowerCase() === currentAnswer.toLowerCase()){
+
+        score++;
+
+        document.getElementById("score").innerText =
+        score;
+
+        document.getElementById("result").innerHTML =
+        "✅ Richtig!";
+
+        if(score >= 50){
+
+            setTimeout(() => {
+
+                alert(
+                    "🏆 GEWONNEN!\\n\\n" +
+                    "Du hast 50 Punkte erreicht!"
+                );
+
+                location.reload();
+
+            },500);
+
+            return;
+        }
+
+    }else{
+
+        document.getElementById("result").innerHTML =
+        "❌ Falsch! Richtige Antwort: " +
+        currentAnswer;
+    }
+
+    setTimeout(nextQuestion,1500);
+}
+
+</script>
+
+</body>
+</html>
